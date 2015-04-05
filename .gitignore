@@ -1,0 +1,3 @@
+gensvg/*.svg
+config.json
+go/
