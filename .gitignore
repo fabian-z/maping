@@ -1,3 +1,10 @@
-gensvg/*.svg
 config.json
+
+#Ignore gopath when working self-contained
 go/
+
+#Ignore build/execution output
+maping
+maping.db
+gensvg/gensvg
+gensvg/*.svg
