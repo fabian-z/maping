@@ -2,11 +2,14 @@
 // Use of this source code is governed by the Apache License v2.0
 // which can be found in the LICENSE file.
 
+//mail account ping (maping) - utility for checking sets of mail servers (SMTP/IMAPv4).
+//Saves results to database and may generate an SVG data visualization matrix from the results.
+//For the moment, please refer to the documentation on https://github.com/nfdesign/maping
+package main
+
 //For the scope of this project TX/RX is defined as follows:
 //TX: Acc A -> Acc B (using Acc A SMTP and Acc B IMAP)
 //RX: Acc B -> Acc A (using Acc B SMTP and Acc A IMAP)
-
-package main
 
 import (
 	"database/sql"

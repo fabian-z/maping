@@ -2,8 +2,9 @@
 // Use of this source code is governed by the Apache License v2.0
 // which can be found in the LICENSE file.
 
-// config.go
 package main
+
+//Reading and parsing configuration
 
 import (
 	"encoding/json"

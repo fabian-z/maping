@@ -2,15 +2,15 @@
 // Use of this source code is governed by the Apache License v2.0
 // which can be found in the LICENSE file.
 
-// smtpclient
 package smtpclient
 
+// smtpclient used for testing.
 // Using modified net/smtp package to provide plain auth over SSL/TLS
 // and CRAM-MD5 detection with plain fallback over SendMail func
 
 import (
-	"github.com/nfdesign/maping/smtpclient/smtpssl"
 	"bytes"
+	"github.com/nfdesign/maping/smtpclient/smtpssl"
 	"log"
 	"text/template"
 	"time"

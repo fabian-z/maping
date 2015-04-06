@@ -1,6 +1,7 @@
 // Copyright 2015 NF Design UG (haftungsbeschraenkt). All rights reserved.
 // Use of this source code is governed by the Apache License v2.0
 // which can be found in the LICENSE file.
+
 package main
 
 func removeDuplicatesFromArray(arr [][]int) [][]int {
