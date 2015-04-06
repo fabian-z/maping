@@ -1,6 +1,6 @@
 #Getting started
 
-You will need to have a working go environment installed. Refer to your distributions manual or support forums on accomplish this.
+You will need to have a working go environment installed. Refer to your distributions manual or support forums on how to accomplish this.
 
 ```
 go get github.com/nfdesign/maping
