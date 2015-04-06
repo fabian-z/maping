@@ -1,0 +1,15 @@
+language: go
+
+go:
+  - 1.4
+  - tip
+
+before_install:
+  - cp example.json config.json
+  - chmod 600 config.json
+
+install:
+  - go get github.com/ajstarks/svgo
+  - go get github.com/mxk/go-imap
+  - go get github.com/cznic/ql/driver
+  - go get github.com/nfdesign/maping/gensvg
