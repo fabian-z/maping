@@ -1,6 +1,36 @@
+#Features
+
+* Cross-platform - targeting all platforms go targets
+* No hard CGO dependency, although it needs the system x509 certificate store
+
+---
+
+* Implementing SMTP 8BITMIME, AUTH, STARTTLS (using net/smtp)
+* Implementing IMAP4rev1 using [go-imap](https://github.com/mxk/go-imap) - including support for AUTHENTICATE with CRAM-MD5
+* SMTPS and IMAPS support (Explicit SSL) - supports AUTH PLAIN/LOGIN over secure connection
+* Supporting virtually any mail hoster offering IMAP access
+
+---
+
+* Fully configurable using JSON-like syntax (extended with comments)
+* Automatic test pair generation using post-processed cartesian products
+* Concurrent execution of tests using worker pool
+* Integrated, pure go database using [ql](https://github.com/cznic/ql)
+* Stores gzip compressed protocol logs alongside with test data in a separate database table
+
+----
+
+* Test data visualization in an SVG matrix (separate tool)
+* Ability to visualize latest or specific dataset from given database
+
+###To be done
+
+* Unit tests
+* godoc
+
 #Getting started
 
-You will need to have a working go environment installed. Refer to your distributions manual or support forums on how to accomplish this.
+You will need to have a working go environment installed. Refer to your distributions manual, the [go manual](https://golang.org/doc/install) or support forums on how to accomplish this.
 
 ```
 go get github.com/nfdesign/maping
