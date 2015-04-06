@@ -1,0 +1,40 @@
+{
+	//This configuration file uses JSON syntax but allows
+	//comments on *separate* lines, starting with //
+	
+	//Mail body text that will be used in the test messages
+	"testBody": "This is a timing test message.",
+
+	//Define number of tests executed concurrently
+	"workerRoutines": 5,
+
+	//Database settings
+	"database": {
+	//absolute or path relative to binary
+	"file": "maping.db",
+	"inmemory": false
+	},
+	
+	
+	"imap": {
+	//Amount of recent mails to load (increase for busy accounts) (s)
+	"loadrecent":10,
+	//Connection timeout (s)
+	"timeout":30,
+	 //Wait for mail this long before aborting (s)
+	"timeoutrcv":300,
+	//Delay between subsequent checks (s)
+	"waittime":30
+	},
+	
+	//Set mail accounts to be tested here. One map is one account, test pairs are generated automatically.
+	//Testing on separate accounts is recommended.
+	"mailAccounts": [
+	//User (equals mail adress), Password, SMTP Server, IMAPv4 Server, Explicit SSL setting for IMAP/SMTP
+	{ "user":"exampleuser1@example.com", "password":"thisisabadpassword", "smtphost":"smtp.example.com", "imaphost":"imap.example.com", "explicitssl_imap":true, "explicitssl_smtp":true },
+	{ "user":"exampleuser2@anotherhost.com", "password":"anothertoosimplepassword", "smtphost":"smtp.anotherhost.com", "imaphost":"imap.anotherhost.com", "explicitssl_imap":true, "explicitssl_smtp":true },
+	{ "user":"exampleuser3@yougetitnow.com", "password":"yetanotherexamplepass", "smtphost":"smtp.yougetitnow.com", "imaphost":"imap.yougetitnow.com", "explicitssl_imap":true, "explicitssl_smtp":true }
+	]
+	
+  
+}
