@@ -7,6 +7,10 @@ go get github.com/nfdesign/maping
 go get github.com/nfdesign/maping/gensvg
 ```
 
+*Since we are using ql as database, you may need to build with tag "purego", if you want to avoid any CGO dependency while 
+building. This disables some speed optimizations for the built-in database ql.
+Please see [this issue](https://github.com/cznic/ql/issues/86).*
+
 After this command, the executables maping and gensvg will be in $GOPATH/bin. Use the example,json configuration from this repository or from $GOPATH/src/github.com/nfdesign/maping/example.json to create a new configuration. By default, maping will look for config.json in its own directory and for /etc/maping.json. You may also specifiy a configuration file on the command line (see below).
 After the first run, you may use the gensvg command to create a SVG visualization of the generated test data from the database like this:
 

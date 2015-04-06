@@ -6,10 +6,6 @@
 //TX: Acc A -> Acc B (using Acc A SMTP and Acc B IMAP)
 //RX: Acc B -> Acc A (using Acc B SMTP and Acc A IMAP)
 
-//Since we are using ql as database, you need to build with tag "purego"
-//if you want to avoid any CGO dependency while building
-//This disables some speed optimizations for the built-in database ql
-
 package main
 
 import (
