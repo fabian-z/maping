@@ -223,7 +223,7 @@ func TestNewClient(t *testing.T) {
 	}
 	var fake faker
 	fake.ReadWriter = bufio.NewReadWriter(bufio.NewReader(strings.NewReader(newClientServer)), bcmdbuf)
-	c, err := NewClient(fake, "fake.host")
+	c, bytelog, err := NewClient(fake, "fake.host")
 	if err != nil {
 		t.Fatalf("NewClient: %v\n(after %v)", err, out())
 	}
@@ -236,7 +236,9 @@ func TestNewClient(t *testing.T) {
 	if err := c.Quit(); err != nil {
 		t.Fatalf("QUIT failed: %s", err)
 	}
-
+	if len(bytelog.smtplog) == 0 {
+		t.Fatalf("No SMTP log generated")
+	}
 	actualcmds := out()
 	if newClientClient != actualcmds {
 		t.Fatalf("Got:\n%s\nExpected:\n%s", actualcmds, newClientClient)
@@ -263,7 +265,7 @@ func TestNewClient2(t *testing.T) {
 	bcmdbuf := bufio.NewWriter(&cmdbuf)
 	var fake faker
 	fake.ReadWriter = bufio.NewReadWriter(bufio.NewReader(strings.NewReader(newClient2Server)), bcmdbuf)
-	c, err := NewClient(fake, "fake.host")
+	c, bytelog, err := NewClient(fake, "fake.host")
 	if err != nil {
 		t.Fatalf("NewClient: %v", err)
 	}
@@ -273,7 +275,9 @@ func TestNewClient2(t *testing.T) {
 	if err := c.Quit(); err != nil {
 		t.Fatalf("QUIT failed: %s", err)
 	}
-
+	if len(bytelog.smtplog) == 0 {
+		t.Fatalf("No SMTP log generated")
+	}
 	bcmdbuf.Flush()
 	actualcmds := cmdbuf.String()
 	if newClient2Client != actualcmds {

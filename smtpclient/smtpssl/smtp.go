@@ -146,8 +146,10 @@ func NewClient(conn net.Conn, host string) (*Client, *byteLogger, error) {
 	}
 
 	w := &byteLogger{}
-	w.Write([]byte("Connected to: " + conn.RemoteAddr().String() + "\n"))
 
+	if conn.RemoteAddr() != nil {
+		w.Write([]byte("Connected to: " + conn.RemoteAddr().String() + "\n"))
+	}
 	conn = &LogProxy{conn, false, w}
 
 	text := textproto.NewConn(conn)
