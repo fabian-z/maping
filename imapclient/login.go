@@ -32,12 +32,12 @@ import (
 //Login helper functions derived from go-imap demo1.go
 
 func loginIMAP(c *imap.Client, user, pass string) (cmd *imap.Command, err error) {
-	//defer c.SetLogMask(sensitiveLogin(c, "LOGIN"))
+	defer c.SetLogMask(sensitiveLogin(c, "LOGIN"))
 	return c.Login(user, pass)
 }
 
 func loginCramIMAP(c *imap.Client, user, pass string) (cmd *imap.Command, err error) {
-	//defer c.SetLogMask(sensitiveLogin(c, "AUTHENTICATE"))
+	defer c.SetLogMask(sensitiveLogin(c, "AUTHENTICATE"))
 
 	return c.Auth(CRAMMD5Auth(user, pass))
 }
