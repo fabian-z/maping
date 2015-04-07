@@ -1,4 +1,7 @@
-// utils_test.go
+// Copyright 2015 NF Design UG (haftungsbeschraenkt). All rights reserved.
+// Use of this source code is governed by the Apache License v2.0
+// which can be found in the LICENSE file.
+
 package main
 
 import (
@@ -33,25 +36,32 @@ func TestGetRandomString(t *testing.T) {
 
 func TestGzipByteSlice(t *testing.T) {
 
-	randomtestdata := []byte(GetRandomString(150))
+	var (
+		randomtestdata, compressed []byte
+		cbuf, buf                  *bytes.Buffer
+		err                        error
+		r                          *gzip.Reader
+	)
 
-	compressed := GzipByteSlice(randomtestdata)
+	randomtestdata = []byte(GetRandomString(150))
+
+	compressed = GzipByteSlice(randomtestdata)
 
 	if len(randomtestdata) >= len(compressed) {
 		t.Error(utilsTestLogPrefix + "gzip did not properly compress data")
 	}
 
-	cbuf := new(bytes.Buffer)
-	_, err := cbuf.Write(compressed)
+	cbuf = new(bytes.Buffer)
+	_, err = cbuf.Write(compressed)
 	if err != nil {
 		t.Error(err)
 	}
 
-	r, err := gzip.NewReader(cbuf)
+	r, err = gzip.NewReader(cbuf)
 	if err != nil {
 		t.Error(err)
 	}
-	buf := new(bytes.Buffer)
+	buf = new(bytes.Buffer)
 	buf.ReadFrom(r)
 	r.Close()
 
