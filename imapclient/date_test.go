@@ -23,8 +23,9 @@ func TestDateParse(t *testing.T) {
 	if err != nil {
 		t.Fatal("Error parsing date: " + err.Error())
 	}
-	if timet.Unix() != 1104703446 {
-		t.Fatal("Time parsed wrong")
+
+	if timet.Format(time.RFC822) != "02 Jan 05 15:04 MST" {
+		t.Fatal("Error parsing date, got: " + timet.Format(time.RFC822))
 	}
 
 	testdate = "2 Jan 05 15:04 CET"
@@ -33,8 +34,9 @@ func TestDateParse(t *testing.T) {
 	if err != nil {
 		t.Fatal("Error parsing date: " + err.Error())
 	}
-	if timet.Unix() != 1104674640 {
-		t.Fatal("Time parsed wrong")
+
+	if timet.Format(time.RFC822) != "02 Jan 05 15:04 CET" {
+		t.Fatal("Error parsing date, got: " + timet.Format(time.RFC822))
 	}
 
 }
