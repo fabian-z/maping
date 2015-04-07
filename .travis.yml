@@ -10,6 +10,6 @@ before_install:
 
 install:
   - go get github.com/ajstarks/svgo
-  - go get github.com/mxk/go-imap
+  - go get github.com/mxk/go-imap/imap
   - go get github.com/cznic/ql/driver
   - go get github.com/nfdesign/maping/gensvg
