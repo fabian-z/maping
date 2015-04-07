@@ -1,3 +1,7 @@
+#maping - [![Build Status](https://travis-ci.org/nfdesign/maping.svg?branch=master)](https://travis-ci.org/nfdesign/maping)
+mail account ping - utility for checking sets of mail servers (SMTP/IMAPv4).
+Saves results to database and is able to generate an SVG data visualization matrix from the results.
+
 #Features
 
 * Cross-platform - targeting all platforms go targets
