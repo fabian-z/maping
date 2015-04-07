@@ -15,25 +15,25 @@ func TestDateParse(t *testing.T) {
 
 	var (
 		testdate string = "Mon, 02 Jan 2005 15:04:06 -0700 (MST)"
-		time     time.Time
+		timet    time.Time
 		err      error
 	)
 
-	time, err = parseDate(testdate)
+	timet, err = parseDate(testdate)
 	if err != nil {
 		t.Fatal("Error parsing date: " + err.Error())
 	}
-	if time.Unix() != 1104703446 {
+	if timet.Unix() != 1104703446 {
 		t.Fatal("Time parsed wrong")
 	}
 
 	testdate = "2 Jan 05 15:04 CET"
 
-	time, err = parseDate(testdate)
+	timet, err = parseDate(testdate)
 	if err != nil {
 		t.Fatal("Error parsing date: " + err.Error())
 	}
-	if time.Unix() != 1104674640 {
+	if timet.Unix() != 1104674640 {
 		t.Fatal("Time parsed wrong")
 	}
 
