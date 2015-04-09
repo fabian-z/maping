@@ -36,12 +36,11 @@ import (
 	"github.com/mxk/go-imap/imap"
 )
 
-//CRAM-MD5 auth for imap.SASL derived from net/smtp/auth.go
-
 type cramMD5Auth struct {
 	username, secret string
 }
 
+//CRAMMD5Auth provides CRAM-MD5 auth for imap.SASL derived from net/smtp/auth.go.
 func CRAMMD5Auth(username, secret string) imap.SASL {
 	return &cramMD5Auth{username, secret}
 }

@@ -14,7 +14,7 @@ const utilsTestLogPrefix = "date_test.go: "
 func TestDateParse(t *testing.T) {
 
 	var (
-		testdate string = "Mon, 02 Jan 2005 15:04:06 -0700 (MST)"
+		testdate = "Mon, 02 Jan 2005 15:04:06 -0700 (MST)"
 		timet    time.Time
 		err      error
 	)

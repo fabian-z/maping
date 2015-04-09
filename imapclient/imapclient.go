@@ -2,7 +2,6 @@
 // Use of this source code is governed by the Apache License v2.0
 // which can be found in the LICENSE file.
 
-// imapclient
 package imapclient
 
 import (
@@ -21,8 +20,20 @@ var (
 )
 
 const (
-	explicit_ssl_port string = "993"
+	explicitSSLPort string = "993"
 )
+
+type byteLogger struct {
+	imaplog []byte
+}
+
+//ImapSettings defines common timeouts and durations in sec.
+type ImapSettings struct {
+	LoadRecent int
+	Timeout    int
+	TimeoutRcv int64
+	WaitTime   int
+}
 
 func recvUnilateralResponse(unichan chan string) {
 
@@ -32,7 +43,7 @@ func recvUnilateralResponse(unichan chan string) {
 
 func fetchAndProcess(c *imap.Client, subject string, loadrecent uint32, unichan chan string) (int64, error) {
 
-	var uid uint32 = 0
+	var uid uint32
 	var rcvdate time.Time
 
 	expunge := false
@@ -141,14 +152,9 @@ func fetchAndProcess(c *imap.Client, subject string, loadrecent uint32, unichan 
 
 		return rcvdate.Unix(), nil
 
-	} else {
-		return -2, errors.New("No mail found")
 	}
+	return -2, errors.New("No mail found")
 
-}
-
-type byteLogger struct {
-	imaplog []byte
 }
 
 func (w *byteLogger) Write(p []byte) (int, error) {
@@ -160,25 +166,20 @@ func (w *byteLogger) Write(p []byte) (int, error) {
 	return len(p), nil
 }
 
-type ImapSettings struct {
-	LoadRecent int
-	Timeout    int
-	TimeoutRcv int64
-	WaitTime   int
-}
-
+//ConnectAndCheck connects to an IMAP host, waiting for a given subject in INBOX for timeoutrcv seconds.
+//It checks for new mail every waittime seconds, but reacts on a unilateral response indicating new mail.
 func ConnectAndCheck(host string, user string, password string, explicitssl bool, subject string, config *ImapSettings) (int64, []byte, error) {
 
 	var (
 		//Channel for goroutine synchronization
-		unichan    chan string = make(chan string, 1)
-		force      chan string = make(chan string, 1)
+		unichan    = make(chan string, 1)
+		force      = make(chan string, 1)
 		c          *imap.Client
 		rsp        *imap.Response
-		timeout    time.Duration = time.Duration(config.Timeout) * time.Second
-		timeoutrcv time.Duration = time.Duration(config.TimeoutRcv) * time.Second
-		waittime   time.Duration = time.Duration(config.WaitTime) * time.Second
-		loadrecent uint32        = uint32(config.LoadRecent)
+		timeout    = time.Duration(config.Timeout) * time.Second
+		timeoutrcv = time.Duration(config.TimeoutRcv) * time.Second
+		waittime   = time.Duration(config.WaitTime) * time.Second
+		loadrecent = uint32(config.LoadRecent)
 		err        error
 	)
 
@@ -191,20 +192,20 @@ func ConnectAndCheck(host string, user string, password string, explicitssl bool
 	if explicitssl == true {
 
 		//Explicit SSL
-		conn, err := tls.Dial("tcp", host+":"+explicit_ssl_port, nil)
+		conn, err := tls.Dial("tcp", host+":"+explicitSSLPort, nil)
 
 		if err != nil {
 
-			log.Printf("TLS connection to host %s port %s failed", host, explicit_ssl_port)
+			log.Printf("TLS connection to host %s port %s failed", host, explicitSSLPort)
 			log.Println(err)
 			return -1, nil, err
 		}
 
 		// Connect to the server
-		c, err = imap.NewClient(conn, host+":"+explicit_ssl_port, timeout)
+		c, err = imap.NewClient(conn, host+":"+explicitSSLPort, timeout)
 		if err != nil {
 
-			log.Printf("IMAP connection to host %s port %s failed", host, explicit_ssl_port)
+			log.Printf("IMAP connection to host %s port %s failed", host, explicitSSLPort)
 			log.Println(err)
 			return -1, nil, err
 		}
@@ -288,7 +289,7 @@ func ConnectAndCheck(host string, user string, password string, explicitssl bool
 
 	}(c, unichan, force)
 
-	timeout_channel := time.After(timeoutrcv)
+	timeoutChannel := time.After(timeoutrcv)
 	tick := time.Tick(waittime)
 
 	force <- "rcv"
@@ -298,7 +299,7 @@ func ConnectAndCheck(host string, user string, password string, explicitssl bool
 		select {
 
 		// Got a timeout! fail with a timeout error
-		case <-timeout_channel:
+		case <-timeoutChannel:
 			return -1, nil, errors.New("Timeout waiting for mail")
 
 		case <-tick:
@@ -311,9 +312,9 @@ func ConnectAndCheck(host string, user string, password string, explicitssl bool
 				if err != nil {
 
 					return -1, nil, err
-				} else {
-					return ret, w.imaplog, nil
 				}
+				return ret, w.imaplog, nil
+
 			}
 
 		case <-force:
@@ -326,9 +327,9 @@ func ConnectAndCheck(host string, user string, password string, explicitssl bool
 				if err != nil {
 
 					return -1, nil, err
-				} else {
-					return ret, w.imaplog, nil
 				}
+				return ret, w.imaplog, nil
+
 			}
 
 		}

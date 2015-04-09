@@ -28,7 +28,7 @@
 //OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // Slightly modified for use in maping
-// date.go
+
 package imapclient
 
 import (
