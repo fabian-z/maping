@@ -11,7 +11,7 @@
 
 package main
 
-var font_sourcesans []byte = []byte(`
+var fontSourceSansPro = []byte(`
 <style>
   <![CDATA[
 		/*

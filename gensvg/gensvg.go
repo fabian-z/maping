@@ -50,15 +50,15 @@ func getLastTimestamp(db *sql.DB, tablename string) (int64, error) {
 }
 
 type logentry struct {
-	tx, rx                                 int64
-	acc_a, acc_b, imaphost_tx, imaphost_rx string
+	tx, rx                             int64
+	accA, accB, imapHostTx, imapHostRx string
 }
 
 const gridwidth int = 50
 
-const fontstyle string = "font-size:12pt;font-family:'source_sans_pro';color:black;"
-const textstyle_middle string = fontstyle + "text-anchor:middle; "
-const textstyle_left string = fontstyle + "text-anchor:left; "
+const fontStyle string = "font-size:12pt;font-family:'source_sans_pro';color:black;"
+const textStyleMiddle string = fontStyle + "text-anchor:middle; "
+const textStyleLeft string = fontStyle + "text-anchor:left; "
 
 const red string = "#FF0000"
 const yellow string = "#FFFF00"
@@ -76,15 +76,15 @@ func main() {
 		height, width int
 		stamptime     time.Time
 		logarray      []logentry
-		cord          map[string]int = make(map[string]int)
-		domain        map[int]string = make(map[int]string)
-		database                     = flag.String("db", "maping.db", "Path to database")
-		output                       = flag.String("output", "output.svg", "Output file (SVG format) - will be overwritten")
-		timestamp                    = flag.Int64("timestamp", 0, "Visualize dataset identified by timestamp - leave out or 0 to use latest")
+		cord          = make(map[string]int)
+		domain        = make(map[int]string)
+		database      = flag.String("db", "maping.db", "Path to database")
+		output        = flag.String("output", "output.svg", "Output file (SVG format) - will be overwritten")
+		timestamp     = flag.Int64("timestamp", 0, "Visualize dataset identified by timestamp - leave out or 0 to use latest")
 		s             string
-		hoster_a      string
-		hoster_b      string
-		svg_text      string
+		hosterA       string
+		hosterB       string
+		svgText       string
 	)
 	flag.Parse()
 
@@ -134,7 +134,7 @@ func main() {
 	for rows.Next() {
 
 		l := new(logentry)
-		err = rows.Scan(&l.tx, &l.rx, &l.acc_a, &l.acc_b, &l.imaphost_tx, &l.imaphost_rx)
+		err = rows.Scan(&l.tx, &l.rx, &l.accA, &l.accB, &l.imapHostTx, &l.imapHostRx)
 		if err != nil {
 			log.Fatal(err)
 
@@ -160,33 +160,33 @@ func main() {
 
 	for _, value := range logarray {
 		if len(cord) == 0 {
-			cord[value.acc_a] = 1
-			cord[value.acc_b] = 2
+			cord[value.accA] = 1
+			cord[value.accB] = 2
 		} else {
-			if cord[value.acc_a] == 0 {
-				cord[value.acc_a] = len(cord) + 1
+			if cord[value.accA] == 0 {
+				cord[value.accA] = len(cord) + 1
 			}
-			if cord[value.acc_b] == 0 {
-				cord[value.acc_b] = len(cord) + 1
+			if cord[value.accB] == 0 {
+				cord[value.accB] = len(cord) + 1
 			}
 		}
 
-		if hb := strings.Split(value.imaphost_tx, "."); len(hb) > 2 {
-			hoster_b = hb[1] + "." + hb[2]
+		if hb := strings.Split(value.imapHostTx, "."); len(hb) > 2 {
+			hosterB = hb[1] + "." + hb[2]
 		} else {
-			hoster_b = value.imaphost_tx
+			hosterB = value.imapHostTx
 		}
-		if ha := strings.Split(value.imaphost_rx, "."); len(ha) > 2 {
-			hoster_a = ha[1] + "." + ha[2]
+		if ha := strings.Split(value.imapHostRx, "."); len(ha) > 2 {
+			hosterA = ha[1] + "." + ha[2]
 		} else {
-			hoster_a = value.imaphost_rx
+			hosterA = value.imapHostRx
 		}
 
-		domain[cord[value.acc_a]] = strings.Split(value.acc_a, "@")[1] + " (" + hoster_a + ")"
-		domain[cord[value.acc_b]] = strings.Split(value.acc_b, "@")[1] + " (" + hoster_b + ")"
+		domain[cord[value.accA]] = strings.Split(value.accA, "@")[1] + " (" + hosterA + ")"
+		domain[cord[value.accB]] = strings.Split(value.accB, "@")[1] + " (" + hosterB + ")"
 	}
 
-	var amount int = len(domain)
+	var amount = len(domain)
 
 	width = 190 + amount*50
 	height = 130 + amount*80
@@ -197,7 +197,7 @@ func main() {
 	//to achieve a consistent look across platforms
 	//See http://caniuse.com/woff and the font def.
 	//in font.go
-	_, err = canvas.Writer.Write(font_sourcesans)
+	_, err = canvas.Writer.Write(fontSourceSansPro)
 
 	if err != nil {
 		log.Fatal(err)
@@ -209,58 +209,58 @@ func main() {
 
 	canvas.Line(90, 70, 70, 80, stroke)
 	canvas.Line(90, 70, 80, 90, stroke)
-	canvas.Text(170, 40, stamptime.Format("2 Jan 06, 15:04 (MST)"), textstyle_middle)
+	canvas.Text(170, 40, stamptime.Format("2 Jan 06, 15:04 (MST)"), textStyleMiddle)
 
 	for i := amount - 1; i >= 0; i-- {
 		pos := (i * gridwidth) + 100
 		canvas.Rect(pos, pos, gridwidth, gridwidth, "fill:"+grey)
 
-		canvas.Text(70, pos+30, strconv.Itoa(i+1), textstyle_middle)
-		canvas.Text(pos+20, 80, strconv.Itoa(i+1), textstyle_middle)
+		canvas.Text(70, pos+30, strconv.Itoa(i+1), textStyleMiddle)
+		canvas.Text(pos+20, 80, strconv.Itoa(i+1), textStyleMiddle)
 
 	}
 
 	for _, value := range logarray {
 
 		var x, y int
-		var color_tx, color_rx string
-		x = 50 + cord[value.acc_b]*50
-		y = 50 + cord[value.acc_a]*50
+		var colorTx, colorRx string
+		x = 50 + cord[value.accB]*50
+		y = 50 + cord[value.accA]*50
 
-		text_tx := strconv.FormatInt(value.tx, 10)
-		text_rx := strconv.FormatInt(value.rx, 10)
+		textTx := strconv.FormatInt(value.tx, 10)
+		textRx := strconv.FormatInt(value.rx, 10)
 
 		switch {
 		case value.tx < 0:
-			color_tx = red
-			text_tx = "ERR"
+			colorTx = red
+			textTx = "ERR"
 		case value.tx == 0:
-			color_tx = green
-			text_tx = "<1"
+			colorTx = green
+			textTx = "<1"
 		case value.tx <= 30:
-			color_tx = green
+			colorTx = green
 		case value.tx > 30:
-			color_tx = yellow
+			colorTx = yellow
 		}
 
 		switch {
 		case value.rx < 0:
-			color_rx = red
-			text_rx = "ERR"
+			colorRx = red
+			textRx = "ERR"
 		case value.rx == 0:
-			color_rx = green
-			text_rx = "<1"
+			colorRx = green
+			textRx = "<1"
 		case value.rx <= 30:
-			color_rx = green
+			colorRx = green
 		case value.rx > 30:
-			color_rx = yellow
+			colorRx = yellow
 		}
 
-		canvas.Rect(x, y, gridwidth, gridwidth, "fill:"+color_tx)
-		canvas.Text(x+22, y+30, text_tx, textstyle_middle)
+		canvas.Rect(x, y, gridwidth, gridwidth, "fill:"+colorTx)
+		canvas.Text(x+22, y+30, textTx, textStyleMiddle)
 
-		canvas.Rect(y, x, gridwidth, gridwidth, "fill:"+color_rx)
-		canvas.Text(y+22, x+30, text_rx, textstyle_middle)
+		canvas.Rect(y, x, gridwidth, gridwidth, "fill:"+colorRx)
+		canvas.Text(y+22, x+30, textRx, textStyleMiddle)
 
 	}
 
@@ -270,8 +270,8 @@ func main() {
 
 	}
 
-	svg_text = `<text x="0" y="` + strconv.Itoa(width-40) + `" style="` + textstyle_left + `">` + s + "</text>"
-	_, err = canvas.Writer.Write([]byte(svg_text))
+	svgText = `<text x="0" y="` + strconv.Itoa(width-40) + `" style="` + textStyleLeft + `">` + s + "</text>"
+	_, err = canvas.Writer.Write([]byte(svgText))
 	if err != nil {
 		log.Fatal(err)
 	}
