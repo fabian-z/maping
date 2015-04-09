@@ -52,11 +52,12 @@ import (
 	"strings"
 )
 
-type byteLogger struct {
+//ByteLogger is a simple struct holding the smtp protocol log in smtplog []byte.
+type ByteLogger struct {
 	smtplog []byte
 }
 
-func (w *byteLogger) Write(p []byte) (int, error) {
+func (w *ByteLogger) Write(p []byte) (int, error) {
 
 	//This is in conscious violation of the type Writer spec in pkg/io:
 	//"Implementations must not retain p."
@@ -65,13 +66,13 @@ func (w *byteLogger) Write(p []byte) (int, error) {
 	return len(p), nil
 }
 
-type LogProxy struct {
+type logProxy struct {
 	net.Conn
 	authInProgress bool
-	w              *byteLogger
+	w              *ByteLogger
 }
 
-func (l *LogProxy) Read(b []byte) (n int, err error) {
+func (l *logProxy) Read(b []byte) (n int, err error) {
 	n, err = l.Conn.Read(b)
 
 	if strings.HasPrefix(string(b[:n]), "235") || strings.HasPrefix(string(b[:n]), "535") {
@@ -89,7 +90,7 @@ func (l *LogProxy) Read(b []byte) (n int, err error) {
 	return
 }
 
-func (l *LogProxy) Write(b []byte) (n int, err error) {
+func (l *logProxy) Write(b []byte) (n int, err error) {
 
 	n, err = l.Conn.Write(b)
 
@@ -126,7 +127,7 @@ type Client struct {
 }
 
 // Dial returns a new Client connected to an SMTP server at addr.
-func Dial(addr string) (*Client, *byteLogger, error) {
+func Dial(addr string) (*Client, *ByteLogger, error) {
 	conn, err := net.Dial("tcp", addr)
 	if err != nil {
 		return nil, nil, err
@@ -138,19 +139,19 @@ func Dial(addr string) (*Client, *byteLogger, error) {
 
 // NewClient returns a new Client using an existing connection and host as a
 // server name to be used when authenticating.
-func NewClient(conn net.Conn, host string) (*Client, *byteLogger, error) {
+func NewClient(conn net.Conn, host string) (*Client, *ByteLogger, error) {
 
 	var tlsactive = false
 	if _, ok := conn.(*tls.Conn); ok {
 		tlsactive = true
 	}
 
-	w := &byteLogger{}
+	w := &ByteLogger{}
 
 	if conn.RemoteAddr() != nil {
 		w.Write([]byte("Connected to: " + conn.RemoteAddr().String() + "\n"))
 	}
-	conn = &LogProxy{conn, false, w}
+	conn = &logProxy{conn, false, w}
 
 	text := textproto.NewConn(conn)
 	_, _, err := text.ReadResponse(220)
@@ -391,9 +392,8 @@ func SendMail(addr string, aplain Auth, acram Auth, from string, to []string, ms
 	return sbytelog.smtplog, c.Quit()
 }
 
-// SendMailSSL does essentially the same thing as SendMail, differing in
-// that it connects over an explicit TLS channel instead of trying STARTTLS
-
+//SendMailSSL does essentially the same thing as SendMail, differing in
+//that it connects over an explicit TLS channel instead of trying STARTTLS.
 func SendMailSSL(addr string, aplain Auth, acram Auth, from string, to []string, msg []byte) ([]byte, error) {
 
 	host := addr[:strings.Index(addr, ":")]

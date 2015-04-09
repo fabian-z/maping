@@ -16,16 +16,16 @@ import (
 	"time"
 )
 
-type EmailTemplateData struct {
-	From    string
-	To      string
-	Date    string
-	Subject string
-	Body    string
+type emailTemplateData struct {
+	from    string
+	to      string
+	date    string
+	subject string
+	body    string
 }
 
-const explicitssl_port string = "465"
-const smtp_mail_submission_port string = "587"
+const explicitSSLPort string = "465"
+const mailSubmissionPort string = "587"
 
 const emailTemplate = `From: {{.From}}
 To: {{.To}}
@@ -35,6 +35,8 @@ Subject: {{.Subject}}
 {{.Body}}
 `
 
+//Send connects to SMTP server with given authentication and connection information. It then sends mail with subject to toaddr and returns
+//the unix timestamp when the mail was send as integer, the smtp protocol log as []byte or, if applicable, an non-nil error.
 func Send(host string, user string, password string, explicitssl bool, fromaddr string, toaddr string, subject string, body string) (int64, []byte, error) {
 
 	var (
@@ -44,7 +46,7 @@ func Send(host string, user string, password string, explicitssl bool, fromaddr 
 
 	date := time.Now()
 
-	context := &EmailTemplateData{fromaddr,
+	context := &emailTemplateData{fromaddr,
 		toaddr,
 		date.Format(time.RFC1123Z),
 		subject,
@@ -76,26 +78,11 @@ func Send(host string, user string, password string, explicitssl bool, fromaddr 
 
 	if explicitssl {
 		sl, err := smtpssl.SendMailSSL(
-			host+":"+explicitssl_port,
+			host+":"+explicitSSLPort,
 			plainauth,
 			cramauth,
-			context.From,
-			[]string{context.To},
-			buf.Bytes(),
-		)
-		if err != nil {
-			log.Print(err)
-			return -1, nil, err
-		}
-		return date.Unix(), sl, nil
-	} else {
-
-		sl, err := smtpssl.SendMail(
-			host+":"+smtp_mail_submission_port,
-			plainauth,
-			cramauth,
-			context.From,
-			[]string{context.To},
+			context.from,
+			[]string{context.to},
 			buf.Bytes(),
 		)
 		if err != nil {
@@ -104,5 +91,19 @@ func Send(host string, user string, password string, explicitssl bool, fromaddr 
 		}
 		return date.Unix(), sl, nil
 	}
+
+	sl, err := smtpssl.SendMail(
+		host+":"+mailSubmissionPort,
+		plainauth,
+		cramauth,
+		context.from,
+		[]string{context.to},
+		buf.Bytes(),
+	)
+	if err != nil {
+		log.Print(err)
+		return -1, nil, err
+	}
+	return date.Unix(), sl, nil
 
 }
