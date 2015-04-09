@@ -28,7 +28,7 @@ func GetRandomString(size int) string {
 	return s
 }
 
-//Gzip given byte slice and return compressed slice
+//GzipByteSlice takes the given byte slice and returns a gzip compressed slice.
 func GzipByteSlice(b []byte) []byte {
 
 	var z bytes.Buffer

@@ -12,39 +12,31 @@ import (
 )
 
 type result struct {
-	rx, tx                     int64
-	sl_tx, il_tx, sl_rx, il_rx []byte
+	rx, tx                 int64
+	slTx, ilTx, slRx, ilRx []byte
 }
 
-func ping(workerid int, emailacc_a *emailAccount, emailacc_b *emailAccount) *result {
-	var testbody string = config.testBody
+func ping(workerid int, emailaccA *emailAccount, emailaccB *emailAccount) *result {
+	var testbody = config.testBody
 	var logprefix = "Worker " + strconv.Itoa(workerid) + ": "
 
 	var (
-		s_tx, i_tx, tx, s_rx, i_rx, rx int64
-		sl_tx, il_tx, sl_rx, il_rx     []byte
-		subject_tx, subject_rx         string
-		err                            error
+		sTx, iTx, tx, sRx, iRx, rx int64
+		slTx, ilTx, slRx, ilRx     []byte
+		subjectTx, subjectRx       string
+		err                        error
 	)
-	imap_settings := &imapclient.ImapSettings{config.imapSettings.loadRecent, config.imapSettings.timeout, config.imapSettings.timeoutRcv, config.imapSettings.waitTime}
+	iSettings := &imapclient.ImapSettings{config.imapSettings.loadRecent, config.imapSettings.timeout, config.imapSettings.timeoutRcv, config.imapSettings.waitTime}
 
 	//hacky
 	for {
 		log.Println(logprefix + "TX")
 
-		subject_tx = "[maping]" + GetRandomString(15)
-		log.Println(logprefix + "Sending mail from " + emailacc_a.smtpServer + " to " + emailacc_b.smtpServer)
+		subjectTx = "[maping]" + GetRandomString(15)
+		log.Println(logprefix + "Sending mail from " + emailaccA.smtpServer + " to " + emailaccB.smtpServer)
 
-		s_tx, sl_tx, err = smtpclient.Send(emailacc_a.smtpServer, emailacc_a.username, emailacc_a.password, emailacc_a.explicitSSLSMTP, emailacc_a.username, emailacc_b.username, subject_tx, testbody)
-		log.Println(logprefix + "Checking for mail from " + emailacc_a.smtpServer + " on " + emailacc_b.imapServer)
-
-		if err != nil {
-			log.Print(logprefix + err.Error())
-			tx = -1
-			break
-		}
-
-		i_tx, il_tx, err = imapclient.ConnectAndCheck(emailacc_b.imapServer, emailacc_b.username, emailacc_b.password, emailacc_b.explicitSSLIMAP, subject_tx, imap_settings)
+		sTx, slTx, err = smtpclient.Send(emailaccA.smtpServer, emailaccA.username, emailaccA.password, emailaccA.explicitSSLSMTP, emailaccA.username, emailaccB.username, subjectTx, testbody)
+		log.Println(logprefix + "Checking for mail from " + emailaccA.smtpServer + " on " + emailaccB.imapServer)
 
 		if err != nil {
 			log.Print(logprefix + err.Error())
@@ -52,9 +44,17 @@ func ping(workerid int, emailacc_a *emailAccount, emailacc_b *emailAccount) *res
 			break
 		}
 
-		tx = i_tx - s_tx
+		iTx, ilTx, err = imapclient.ConnectAndCheck(emailaccB.imapServer, emailaccB.username, emailaccB.password, emailaccB.explicitSSLIMAP, subjectTx, iSettings)
 
-		if i_tx <= 0 {
+		if err != nil {
+			log.Print(logprefix + err.Error())
+			tx = -1
+			break
+		}
+
+		tx = iTx - sTx
+
+		if iTx <= 0 {
 			//some error likely occured
 			tx = -1
 		}
@@ -65,11 +65,11 @@ func ping(workerid int, emailacc_a *emailAccount, emailacc_b *emailAccount) *res
 	for {
 
 		log.Println(logprefix + "RX")
-		subject_rx = "[maping]" + GetRandomString(15)
+		subjectRx = "[maping]" + GetRandomString(15)
 
-		log.Println(logprefix + "Sending mail from " + emailacc_b.smtpServer + " to " + emailacc_a.smtpServer)
+		log.Println(logprefix + "Sending mail from " + emailaccB.smtpServer + " to " + emailaccA.smtpServer)
 
-		s_rx, sl_rx, err = smtpclient.Send(emailacc_b.smtpServer, emailacc_b.username, emailacc_b.password, emailacc_b.explicitSSLSMTP, emailacc_b.username, emailacc_a.username, subject_rx, testbody)
+		sRx, slRx, err = smtpclient.Send(emailaccB.smtpServer, emailaccB.username, emailaccB.password, emailaccB.explicitSSLSMTP, emailaccB.username, emailaccA.username, subjectRx, testbody)
 
 		if err != nil {
 			log.Print(logprefix + err.Error())
@@ -77,8 +77,8 @@ func ping(workerid int, emailacc_a *emailAccount, emailacc_b *emailAccount) *res
 			break
 		}
 
-		log.Println(logprefix + "Checking for mail from " + emailacc_b.smtpServer + " on " + emailacc_a.imapServer)
-		i_rx, il_rx, err = imapclient.ConnectAndCheck(emailacc_a.imapServer, emailacc_a.username, emailacc_a.password, emailacc_a.explicitSSLIMAP, subject_rx, imap_settings)
+		log.Println(logprefix + "Checking for mail from " + emailaccB.smtpServer + " on " + emailaccA.imapServer)
+		iRx, ilRx, err = imapclient.ConnectAndCheck(emailaccA.imapServer, emailaccA.username, emailaccA.password, emailaccA.explicitSSLIMAP, subjectRx, iSettings)
 
 		if err != nil {
 			log.Print(logprefix + err.Error())
@@ -86,9 +86,9 @@ func ping(workerid int, emailacc_a *emailAccount, emailacc_b *emailAccount) *res
 			break
 		}
 
-		log.Println(logprefix + "Received mail from " + emailacc_b.smtpServer + " on " + emailacc_a.imapServer)
+		log.Println(logprefix + "Received mail from " + emailaccB.smtpServer + " on " + emailaccA.imapServer)
 
-		rx = i_rx - s_rx
+		rx = iRx - sRx
 
 		if rx <= 0 {
 			//some error likely occured
@@ -97,6 +97,6 @@ func ping(workerid int, emailacc_a *emailAccount, emailacc_b *emailAccount) *res
 		break
 	}
 
-	return &result{rx, tx, sl_tx, il_tx, sl_rx, il_rx}
+	return &result{rx, tx, slTx, ilTx, slRx, ilRx}
 
 }

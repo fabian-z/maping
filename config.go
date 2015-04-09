@@ -39,8 +39,8 @@ type imapSettings struct {
 }
 
 //To be given with absolute or relative path to default configuration file
-const config_file_relative string = "config.json"
-const config_file_absolute string = "/etc/maping.json"
+const configFileRelative string = "config.json"
+const configFileAbsolute string = "/etc/maping.json"
 
 // readConfig reads JSON-style configuration from file.
 // It removes comments, unmarshals the top level and puts
@@ -108,11 +108,11 @@ func parseConfig(objmap map[string]*json.RawMessage) (*configurationData, error)
 		return nil, err
 	}
 
-	database_settings := &databaseSettings{database["file"].(string), database["inmemory"].(bool)}
+	dSettings := &databaseSettings{database["file"].(string), database["inmemory"].(bool)}
 	//combination of float64 assertion and int64 conversion needed for JSON
-	imap_settings := &imapSettings{int(imap["loadrecent"].(float64)), int(imap["timeout"].(float64)), int64(imap["timeoutrcv"].(float64)), int(imap["waittime"].(float64))}
+	iSettings := &imapSettings{int(imap["loadrecent"].(float64)), int(imap["timeout"].(float64)), int64(imap["timeoutrcv"].(float64)), int(imap["waittime"].(float64))}
 
-	settings := &configurationData{true, testBody, workerRoutines, mailAccounts, *database_settings, *imap_settings}
+	settings := &configurationData{true, testBody, workerRoutines, mailAccounts, *dSettings, *iSettings}
 
 	return settings, nil
 
@@ -121,29 +121,29 @@ func parseConfig(objmap map[string]*json.RawMessage) (*configurationData, error)
 func init() {
 	const logprefix string = "Configuration: "
 	var (
-		config_file = flag.String("config", config_file_relative, "Path to configuration file")
-		objmap      map[string]*json.RawMessage
-		err         error
+		configFile = flag.String("config", configFileRelative, "Path to configuration file")
+		objmap     map[string]*json.RawMessage
+		err        error
 	)
 	flag.Parse()
 
-	if _, err := os.Stat(*config_file); err == nil {
-		objmap, err = readConfig(*config_file)
+	if _, err := os.Stat(*configFile); err == nil {
+		objmap, err = readConfig(*configFile)
 		if err != nil {
 			log.Fatal(logprefix + err.Error())
 		}
 	} else {
-		log.Println(*config_file + " not found. Trying defaults " + config_file_relative + " and " + config_file_absolute)
+		log.Println(*configFile + " not found. Trying defaults " + configFileRelative + " and " + configFileAbsolute)
 
-		if _, err := os.Stat(config_file_relative); err == nil {
-			log.Println("Using " + config_file_relative)
-			objmap, err = readConfig(config_file_relative)
+		if _, err := os.Stat(configFileRelative); err == nil {
+			log.Println("Using " + configFileRelative)
+			objmap, err = readConfig(configFileRelative)
 			if err != nil {
 				log.Fatal(logprefix + err.Error())
 			}
-		} else if _, err := os.Stat(config_file_absolute); err == nil {
-			log.Println("Using " + config_file_absolute)
-			objmap, err = readConfig(config_file_absolute)
+		} else if _, err := os.Stat(configFileAbsolute); err == nil {
+			log.Println("Using " + configFileAbsolute)
+			objmap, err = readConfig(configFileAbsolute)
 			if err != nil {
 				log.Fatal(logprefix + err.Error())
 			}
