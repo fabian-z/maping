@@ -11,12 +11,12 @@ import (
 	"strconv"
 )
 
-type Result struct {
-	RX, TX                     int64
-	SL_TX, IL_TX, SL_RX, IL_RX []byte
+type result struct {
+	rx, tx                     int64
+	sl_tx, il_tx, sl_rx, il_rx []byte
 }
 
-func ping(workerid int, emailacc_a *EmailAccount, emailacc_b *EmailAccount) *Result {
+func ping(workerid int, emailacc_a *emailAccount, emailacc_b *emailAccount) *result {
 	var testbody string = config.testBody
 	var logprefix = "Worker " + strconv.Itoa(workerid) + ": "
 
@@ -33,10 +33,10 @@ func ping(workerid int, emailacc_a *EmailAccount, emailacc_b *EmailAccount) *Res
 		log.Println(logprefix + "TX")
 
 		subject_tx = "[maping]" + GetRandomString(15)
-		log.Println(logprefix + "Sending mail from " + emailacc_a.SMTPServer + " to " + emailacc_b.SMTPServer)
+		log.Println(logprefix + "Sending mail from " + emailacc_a.smtpServer + " to " + emailacc_b.smtpServer)
 
-		s_tx, sl_tx, err = smtpclient.Send(emailacc_a.SMTPServer, emailacc_a.Username, emailacc_a.Password, emailacc_a.ExplicitSSL_SMTP, emailacc_a.Username, emailacc_b.Username, subject_tx, testbody)
-		log.Println(logprefix + "Checking for mail from " + emailacc_a.SMTPServer + " on " + emailacc_b.IMAPServer)
+		s_tx, sl_tx, err = smtpclient.Send(emailacc_a.smtpServer, emailacc_a.username, emailacc_a.password, emailacc_a.explicitSSLSMTP, emailacc_a.username, emailacc_b.username, subject_tx, testbody)
+		log.Println(logprefix + "Checking for mail from " + emailacc_a.smtpServer + " on " + emailacc_b.imapServer)
 
 		if err != nil {
 			log.Print(logprefix + err.Error())
@@ -44,7 +44,7 @@ func ping(workerid int, emailacc_a *EmailAccount, emailacc_b *EmailAccount) *Res
 			break
 		}
 
-		i_tx, il_tx, err = imapclient.ConnectAndCheck(emailacc_b.IMAPServer, emailacc_b.Username, emailacc_b.Password, emailacc_b.ExplicitSSL_IMAP, subject_tx, imap_settings)
+		i_tx, il_tx, err = imapclient.ConnectAndCheck(emailacc_b.imapServer, emailacc_b.username, emailacc_b.password, emailacc_b.explicitSSLIMAP, subject_tx, imap_settings)
 
 		if err != nil {
 			log.Print(logprefix + err.Error())
@@ -67,9 +67,9 @@ func ping(workerid int, emailacc_a *EmailAccount, emailacc_b *EmailAccount) *Res
 		log.Println(logprefix + "RX")
 		subject_rx = "[maping]" + GetRandomString(15)
 
-		log.Println(logprefix + "Sending mail from " + emailacc_b.SMTPServer + " to " + emailacc_a.SMTPServer)
+		log.Println(logprefix + "Sending mail from " + emailacc_b.smtpServer + " to " + emailacc_a.smtpServer)
 
-		s_rx, sl_rx, err = smtpclient.Send(emailacc_b.SMTPServer, emailacc_b.Username, emailacc_b.Password, emailacc_b.ExplicitSSL_SMTP, emailacc_b.Username, emailacc_a.Username, subject_rx, testbody)
+		s_rx, sl_rx, err = smtpclient.Send(emailacc_b.smtpServer, emailacc_b.username, emailacc_b.password, emailacc_b.explicitSSLSMTP, emailacc_b.username, emailacc_a.username, subject_rx, testbody)
 
 		if err != nil {
 			log.Print(logprefix + err.Error())
@@ -77,8 +77,8 @@ func ping(workerid int, emailacc_a *EmailAccount, emailacc_b *EmailAccount) *Res
 			break
 		}
 
-		log.Println(logprefix + "Checking for mail from " + emailacc_b.SMTPServer + " on " + emailacc_a.IMAPServer)
-		i_rx, il_rx, err = imapclient.ConnectAndCheck(emailacc_a.IMAPServer, emailacc_a.Username, emailacc_a.Password, emailacc_a.ExplicitSSL_IMAP, subject_rx, imap_settings)
+		log.Println(logprefix + "Checking for mail from " + emailacc_b.smtpServer + " on " + emailacc_a.imapServer)
+		i_rx, il_rx, err = imapclient.ConnectAndCheck(emailacc_a.imapServer, emailacc_a.username, emailacc_a.password, emailacc_a.explicitSSLIMAP, subject_rx, imap_settings)
 
 		if err != nil {
 			log.Print(logprefix + err.Error())
@@ -86,7 +86,7 @@ func ping(workerid int, emailacc_a *EmailAccount, emailacc_b *EmailAccount) *Res
 			break
 		}
 
-		log.Println(logprefix + "Received mail from " + emailacc_b.SMTPServer + " on " + emailacc_a.IMAPServer)
+		log.Println(logprefix + "Received mail from " + emailacc_b.smtpServer + " on " + emailacc_a.imapServer)
 
 		rx = i_rx - s_rx
 
@@ -97,6 +97,6 @@ func ping(workerid int, emailacc_a *EmailAccount, emailacc_b *EmailAccount) *Res
 		break
 	}
 
-	return &Result{rx, tx, sl_tx, il_tx, sl_rx, il_rx}
+	return &result{rx, tx, sl_tx, il_tx, sl_rx, il_rx}
 
 }

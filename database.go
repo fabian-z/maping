@@ -34,7 +34,7 @@ const structure = `
 	);
 	`
 
-func saveData(db *sql.DB, timestamp int64, res *Result, emailacc_a *EmailAccount, emailacc_b *EmailAccount) error {
+func saveData(db *sql.DB, timestamp int64, res *result, emailacc_a *emailAccount, emailacc_b *emailAccount) error {
 
 	id, err := getNextID(db, "log")
 
@@ -43,14 +43,14 @@ func saveData(db *sql.DB, timestamp int64, res *Result, emailacc_a *EmailAccount
 	}
 
 	err = execInPreparedTransaction(db, "INSERT INTO log VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);",
-		id, timestamp, res.TX, res.RX, emailacc_a.Username, emailacc_b.Username, emailacc_a.SMTPServer, emailacc_b.IMAPServer, emailacc_b.SMTPServer, emailacc_a.IMAPServer)
+		id, timestamp, res.tx, res.rx, emailacc_a.username, emailacc_b.username, emailacc_a.smtpServer, emailacc_b.imapServer, emailacc_b.smtpServer, emailacc_a.imapServer)
 
 	if err != nil {
 		return err
 	}
 
 	err = execInPreparedTransaction(db, "INSERT INTO protocol VALUES ($1, $2, $3, $4, $5);",
-		id, GzipByteSlice(res.SL_TX), GzipByteSlice(res.IL_TX), GzipByteSlice(res.SL_RX), GzipByteSlice(res.IL_RX))
+		id, GzipByteSlice(res.sl_tx), GzipByteSlice(res.il_tx), GzipByteSlice(res.sl_rx), GzipByteSlice(res.il_rx))
 
 	if err != nil {
 		return err

@@ -18,30 +18,26 @@ import (
 	"time"
 )
 
-type EmailAccount struct {
-	Username, Password, SMTPServer, IMAPServer string
-	ExplicitSSL_IMAP, ExplicitSSL_SMTP         bool
+type emailAccount struct {
+	username, password, smtpServer, imapServer string
+	explicitSSLIMAP, explicitSSLSMTP           bool
 }
 
-type EmailTemplateData struct {
-	From, To, Subject, Body string
+type emailAccounts struct {
+	accA, accB *emailAccount
 }
 
-type EmailAccounts struct {
-	acc_a, acc_b *EmailAccount
+type workerResult struct {
+	res  *result
+	accs *emailAccounts
 }
 
-type WorkerResult struct {
-	res  *Result
-	accs *EmailAccounts
-}
-
-func pingWorker(id int, timestamp int64, workerJobs <-chan EmailAccounts, workerOutput chan<- WorkerResult) {
+func pingWorker(id int, timestamp int64, workerJobs <-chan emailAccounts, workerOutput chan<- workerResult) {
 	for j := range workerJobs {
-		log.Printf("Worker %v: Testing job %v <-> %v", id, j.acc_a.Username, j.acc_b.Username)
-		result := ping(id, j.acc_a, j.acc_b)
+		log.Printf("Worker %v: Testing job %v <-> %v", id, j.accA.username, j.accB.username)
+		result := ping(id, j.accA, j.accB)
 
-		workerOutput <- *&WorkerResult{result, &EmailAccounts{j.acc_a, j.acc_b}}
+		workerOutput <- *&workerResult{result, &emailAccounts{j.accA, j.accB}}
 	}
 }
 
@@ -52,10 +48,10 @@ func main() {
 	var (
 		db *sql.DB
 		//Timestamp execution to provide fixed data sets
-		timestamp    int64              = time.Now().Unix()
-		wr           int                = config.workerRoutines
-		workerJobs   chan EmailAccounts = make(chan EmailAccounts, 50)
-		workerOutput chan WorkerResult  = make(chan WorkerResult, 50)
+		timestamp    = time.Now().Unix()
+		wr           = config.workerRoutines
+		workerJobs   = make(chan emailAccounts, 50)
+		workerOutput = make(chan workerResult, 50)
 	)
 
 	db, err := openAndInitDatabase(config.databaseSettings.inmemory, config.databaseSettings.file)
@@ -80,12 +76,12 @@ func main() {
 
 	for _, acc := range t {
 
-		acc_a := acc[0]
-		acc_b := acc[1]
+		accA := acc[0]
+		accB := acc[1]
 
-		emailacc_a := &EmailAccount{config.mailAccounts[acc_a]["user"].(string), config.mailAccounts[acc_a]["password"].(string), config.mailAccounts[acc_a]["smtphost"].(string), config.mailAccounts[acc_a]["imaphost"].(string), config.mailAccounts[acc_a]["explicitssl_imap"].(bool), config.mailAccounts[acc_a]["explicitssl_smtp"].(bool)}
-		emailacc_b := &EmailAccount{config.mailAccounts[acc_b]["user"].(string), config.mailAccounts[acc_b]["password"].(string), config.mailAccounts[acc_b]["smtphost"].(string), config.mailAccounts[acc_b]["imaphost"].(string), config.mailAccounts[acc_b]["explicitssl_imap"].(bool), config.mailAccounts[acc_b]["explicitssl_smtp"].(bool)}
-		workerJobs <- *&EmailAccounts{emailacc_a, emailacc_b}
+		emailaccA := &emailAccount{config.mailAccounts[accA]["user"].(string), config.mailAccounts[accA]["password"].(string), config.mailAccounts[accA]["smtphost"].(string), config.mailAccounts[accA]["imaphost"].(string), config.mailAccounts[accA]["explicitssl_imap"].(bool), config.mailAccounts[accA]["explicitssl_smtp"].(bool)}
+		emailaccB := &emailAccount{config.mailAccounts[accB]["user"].(string), config.mailAccounts[accB]["password"].(string), config.mailAccounts[accB]["smtphost"].(string), config.mailAccounts[accB]["imaphost"].(string), config.mailAccounts[accB]["explicitssl_imap"].(bool), config.mailAccounts[accB]["explicitssl_smtp"].(bool)}
+		workerJobs <- *&emailAccounts{emailaccA, emailaccB}
 	}
 
 	//No more test pairs
@@ -93,7 +89,7 @@ func main() {
 
 	for i := 1; i <= len(t); i++ {
 		r := <-workerOutput
-		err := saveData(db, timestamp, r.res, r.accs.acc_a, r.accs.acc_b)
+		err := saveData(db, timestamp, r.res, r.accs.accA, r.accs.accB)
 		if err != nil {
 			log.Fatal("Error saving dataset", err.Error())
 		}
